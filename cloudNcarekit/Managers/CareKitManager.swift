@@ -1,5 +1,6 @@
 import CareKit  // CareKit: 헬스케어 앱에서 '활동(Task)'과 '결과(Outcome)'를 관리하는 UI/로직 프레임워크
 import CareKitStore  // CareKitStore: CareKit의 데이터 저장소. Task, Outcome 등을 저장/조회 가능
+import CloudKit
 internal import Combine
 import Foundation  // Swift 기본 기능 제공
 
@@ -9,11 +10,13 @@ class CareKitManager: ObservableObject {
     static let shared = CareKitManager()  // 전역에서 접근할 수 있는 인스턴스
 
     let store: OCKStore  // CareKit의 핵심 데이터베이스 역할
+    let ockRemote: OCKRemoteSynchronizable
 
     // 생성자: OCKStore 초기화 및 기본 Task 등록
     private init() {
+        ockRemote = CloudKitRemote(containerIdentifier: myContainerIdentifier)
         // 로컬 저장소 생성 (이름: BloodGlucoseStore)
-        store = OCKStore(name: "BloodGlucoseStore")
+        store = OCKStore(name: "BloodGlucoseStore", remote: ockRemote)
         setupTasks()  // 앱 실행 시 기본 Task(혈당 측정) 생성
     }
 
