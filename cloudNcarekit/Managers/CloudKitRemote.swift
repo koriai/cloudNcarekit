@@ -18,7 +18,7 @@ class CloudKitRemote: OCKRemoteSynchronizable {
 
     init(containerIdentifier: String) {
         self.container = CKContainer(identifier: containerIdentifier)
-        self.database = container.publicCloudDatabase
+        self.database = container.sharedCloudDatabase
     }
 
     // MARK: - OCKRemoteSynchronizable Required Methods

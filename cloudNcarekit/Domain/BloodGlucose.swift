@@ -3,21 +3,14 @@ import CareKitFHIR
 import CareKitStore
 import Foundation
 import SwiftData
+import CoreData
 
 // MARK: - BloodGlucose Model
-@Model
-class BloodGlucose {
-    var value: Double = 0.0
-    var unit: String = ""
-    var timestamp: Date = Date()
-    var notes: String = ""
-
-    init(value: Double, unit: String, timestamp: Date, notes: String) {
-        self.value = value
-        self.unit = unit
-        self.timestamp = timestamp
-        self.notes = notes
-    }
+class BloodGlucose: NSManagedObject {
+    @NSManaged var value: Double
+    @NSManaged var unit: String
+    @NSManaged var timestamp: Date
+    @NSManaged var notes: String
 }
 
 //
