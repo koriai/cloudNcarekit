@@ -20,10 +20,13 @@ struct BloodGlucoseInputView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
 
+    // 시트 표시 상태
+    @State private var showSheet = false
+
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                headerView // 상단 타이틀/아이콘
+                headerView  // 상단 타이틀/아이콘
 
                 // 권한 유무에 따라 다른 섹션 표시
                 if !healthKitManager.isAuthorized {
@@ -40,6 +43,19 @@ struct BloodGlucoseInputView: View {
             .padding()
             .navigationTitle("혈당 관리")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showSheet = true
+                    } label: {
+                        Image(systemName: "list.bullet")
+                    }
+                    .accessibilityLabel("기록된 혈당 보기")
+                }
+            }
+            .sheet(isPresented: $showSheet) {
+                BloodGlucoseListView()
+            }
         }
         // 저장 결과를 사용자에게 알려주는 알럿
         .alert("알림", isPresented: $showAlert) {
@@ -117,8 +133,10 @@ struct BloodGlucoseInputView: View {
                 Text("디버깅 정보:")
                     .font(.caption)
                     .fontWeight(.bold)
-                Text("HealthKit 사용 가능: \(HKHealthStore.isHealthDataAvailable() ? "예" : "아니오")")
-                    .font(.caption)
+                Text(
+                    "HealthKit 사용 가능: \(HKHealthStore.isHealthDataAvailable() ? "예" : "아니오")"
+                )
+                .font(.caption)
                 Text("현재 권한 상태: \(authorizationStatusText)")
                     .font(.caption)
                 if let error = healthKitManager.authorizationError {
@@ -166,7 +184,9 @@ struct BloodGlucoseInputView: View {
                 if isLoading {
                     // 저장 중이면 스피너 표시
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(
+                            CircularProgressViewStyle(tint: .white)
+                        )
                         .scaleEffect(0.8)
                 } else {
                     Image(systemName: "plus.circle.fill")
@@ -178,11 +198,11 @@ struct BloodGlucoseInputView: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(isInputValid ? Color.blue : Color.gray) // 유효하지 않으면 회색
+            .background(isInputValid ? Color.blue : Color.gray)  // 유효하지 않으면 회색
             .foregroundColor(.white)
             .cornerRadius(12)
         }
-        .disabled(!isInputValid || isLoading) // 입력이 유효하지 않거나 저장 중이면 비활성화
+        .disabled(!isInputValid || isLoading)  // 입력이 유효하지 않거나 저장 중이면 비활성화
     }
 
     // 사용자가 입력한 값 검증(0 < value ≤ 1000)
@@ -208,13 +228,15 @@ struct BloodGlucoseInputView: View {
                 print("healthKitManager success")
 
                 // 2) CareKit 저장 (동일 시각, 동일 값으로 Outcome 기록)
-                try await CareKitManager.shared.saveBloodGlucoseOutcome(value: value)
+                try await CareKitManager.shared.saveBloodGlucoseOutcome(
+                    value: value
+                )
                 print("CareKitManager success")
 
                 // 3) UI 업데이트 및 성공 알림
                 await MainActor.run {
                     isLoading = false
-                    bloodGlucoseValue = "" // 입력창 초기화
+                    bloodGlucoseValue = ""  // 입력창 초기화
                     alertMessage = "혈당 수치가 성공적으로 기록되었습니다."
                     showAlert = true
                 }
@@ -223,12 +245,103 @@ struct BloodGlucoseInputView: View {
                 // 오류 발생 시 사용자에게 안내
                 await MainActor.run {
                     isLoading = false
-                    alertMessage = "기록 저장 중 오류가 발생했습니다: \(error.localizedDescription)"
+                    alertMessage =
+                        "기록 저장 중 오류가 발생했습니다: \(error.localizedDescription)"
                     showAlert = true
                 }
             }
         }
     }
+}
+
+// 혈당 기록 리스트를 보여주는 뷰
+struct BloodGlucoseListView: View {
+    @Environment(\.dismiss) var dismiss
+
+    // CareKitManager.shared에서 저장된 혈당 outcome 데이터를 불러옴
+    @State private var bloodGlucoseRecords: [BloodGlucoseRecord] = []
+
+    var body: some View {
+        NavigationView {
+            List(bloodGlucoseRecords) { record in
+                VStack(alignment: .leading) {
+                    Text(dateFormatter.string(from: record.date))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(record.value, specifier: "%.1f") mg/dL")
+                        .font(.headline)
+                }
+                .padding(.vertical, 4)
+            }
+            .navigationTitle("혈당 기록")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("닫기") {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                loadRecords()
+            }
+        }
+    }
+    private func loadRecords() {
+        Task {
+            do {
+                let calendar = Calendar.current
+                let today = Date()
+                guard
+                    let oneMonthAgo = calendar.date(
+                        byAdding: .month,
+                        value: -1,
+                        to: today
+                    )
+                else { return }
+
+                let outcomes = try await CareKitManager.shared
+                    .fetchBloodGlucoseOutcomes(from: oneMonthAgo, to: today)
+
+                // OCKOutcome → BloodGlucoseRecord 변환
+                let records = outcomes.compactMap {
+                    outcome -> BloodGlucoseRecord? in
+                    guard let value = outcome.values.first?.doubleValue else {
+                        return nil
+                    }
+                    return BloodGlucoseRecord(
+                        date: outcome.createdDate ?? Date(),
+                        value: value
+                    )
+                }
+                print("records count")
+                print(records.count)
+
+                await MainActor.run {
+                    bloodGlucoseRecords = records.sorted(by: {
+                        $0.date > $1.date
+                    })
+                }
+
+            } catch {
+                print("혈당 기록 불러오기 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }
+}
+
+// 혈당 기록 모델 (CareKitManager에서 반환하는 데이터 타입 예시)
+struct BloodGlucoseRecord: Identifiable {
+    let id = UUID()
+    let date: Date
+    let value: Double
 }
 
 #Preview {
