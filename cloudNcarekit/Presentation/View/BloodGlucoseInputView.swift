@@ -204,9 +204,11 @@ struct BloodGlucoseInputView: View {
             do {
                 // 1) HealthKit 저장
                 try await healthKitManager.saveBloodGlucose(value: value)
+                print("healthKitManager success")
 
                 // 2) CareKit 저장 (동일 시각, 동일 값으로 Outcome 기록)
                 try await CareKitManager.shared.saveBloodGlucoseOutcome(value: value)
+                print("CareKitManager success")
 
                 // 3) UI 업데이트 및 성공 알림
                 await MainActor.run {
@@ -215,6 +217,7 @@ struct BloodGlucoseInputView: View {
                     alertMessage = "혈당 수치가 성공적으로 기록되었습니다."
                     showAlert = true
                 }
+                print("UI update success")
             } catch {
                 // 오류 발생 시 사용자에게 안내
                 await MainActor.run {

@@ -5,10 +5,6 @@ internal import Combine
 import CoreData
 import Foundation  // Swift 기본 기능 제공
 
-import CareKitStore
-import CoreData
-
-
 /// Core Data + CloudKit 자동 동기화를 위한 OCKStore 서브클래스
 final class CloudKitOCKStore: OCKStore {
     let cloudContainer: NSPersistentCloudKitContainer
@@ -27,25 +23,52 @@ final class CloudKitOCKStore: OCKStore {
 // CareKit 데이터와 상호작용하는 매니저 클래스
 // 앱 전역에서 하나만 존재하도록 Singleton 패턴 사용 (shared 인스턴스)
 class CareKitManager: ObservableObject {
-    static let shared = CareKitManager()  // 전역에서 접근할 수 있는 인스턴스
+    enum StoreMode {
+        case remote
+        case coreData
+    }
+
+    static private(set) var shared: CareKitManager!
+
+    static func configure(mode: StoreMode) {
+        shared = CareKitManager(mode: mode)
+    }
 
     var store: OCKStore  // CareKit의 핵심 데이터베이스 역할
-    let ockRemote: OCKRemoteSynchronizable
-    let nsContainer: NSPersistentCloudKitContainer
+    let ockRemote: OCKRemoteSynchronizable?
+    let nsContainer: NSPersistentCloudKitContainer?
+    let mode: StoreMode
 
     // 생성자: OCKStore 초기화 및 기본 Task 등록
-    private init() {
-        ockRemote = CloudKitRemote(containerIdentifier: myContainerIdentifier)
-        // 로컬 저장소 생성 (이름: BloodGlucoseStore)
-        store = OCKStore(name: "BloodGlucoseStore", remote: ockRemote)
+    private init(mode: StoreMode = .remote) {
+        self.mode = mode
 
-        // NS Persistence 방식
-        nsContainer = NSPersistentCloudKitContainer(name: "BloodGlucoseStore")
-        nsContainer.viewContext.automaticallyMergesChangesFromParent = true
+        switch mode {
+        case .remote:
+            ockRemote = CloudKitRemote(
+                containerIdentifier: myContainerIdentifier
+            )
+            store = OCKStore(name: "BloodGlucoseStore", remote: ockRemote)
+            nsContainer = nil
+        case .coreData:
+            ockRemote = nil
+            let container = NSPersistentCloudKitContainer(
+                name: "BloodGlucoseStore"
+            )
 
-        // 
-        store = CloudKitOCKStore(name: "BloodGlucoseStore", container: nsContainer)
-        
+            container.persistentStoreDescriptions.first?
+                .cloudKitContainerOptions =
+                NSPersistentCloudKitContainerOptions(
+                    containerIdentifier: myContainerIdentifier
+                )
+            container.viewContext.automaticallyMergesChangesFromParent = true
+            nsContainer = container
+            store = CloudKitOCKStore(
+                name: "BloodGlucoseStore",
+                container: container
+            )
+        }
+
         setupTasks()  // 앱 실행 시 기본 Task(혈당 측정) 생성
     }
 
@@ -63,9 +86,9 @@ class CareKitManager: ObservableObject {
         let bloodGlucoseTask = OCKTask(
             id: "bloodGlucose",  // Task 식별자
             title: "혈당 측정",  // UI에 표시될 제목
-            carePlanUUID: nil,  // Care Plan(관리 계획)에 연결할 경우 UUID 필요
+            carePlanUUID: nil,  // UUID(uuidString: Date().description),  // Care Plan(관리 계획)에 연결할 경우 UUID 필요
             schedule: OCKSchedule.dailyAtTime(  // 매일 특정 시간에 반복되는 스케줄 생성
-                hour: 0,
+                hour: 8,
                 minutes: 0,
                 start: Date(),  // 오늘부터 시작
                 end: nil,  // 종료일 없음
@@ -86,23 +109,34 @@ class CareKitManager: ObservableObject {
             print("Failed to add blood glucose task: \(error)")
         }
     }
-
-    // '혈당 측정' 결과(Outcome) 저장
     func saveBloodGlucoseOutcome(value: Double, date: Date = Date())
         async throws
     {
-        // OCKOutcomeValue: Task 수행 결과 값 (혈당 값과 단위)
-        let outcomeValue = OCKOutcomeValue(value, units: "mg/dL")
+        let taskUUID = try await getTaskUUID(for: "bloodGlucose")
 
-        // OCKOutcome: 실제 수행된 Task의 결과 기록
-        let outcome = OCKOutcome(
-            taskUUID: try await getTaskUUID(for: "bloodGlucose"),  // Task 식별용 UUID 가져오기
-            taskOccurrenceIndex: 0,  // 하루에 여러 번 반복되는 Task일 경우 순번 (0 = 첫 번째)
-            values: [outcomeValue]
-        )
+        // 오늘 날짜 TaskOccurrenceIndex 계산
+        let taskOccurrenceIndex = 0  // 단순 예시: 하루 첫 번째
+        var existingOutcomes = try await store.fetchOutcomes(
+            query: OCKOutcomeQuery(for: Date())
+        ).filter {
+            $0.taskUUID == taskUUID
+                && $0.taskOccurrenceIndex == taskOccurrenceIndex
+        }
 
-        // Outcome을 저장소에 추가
-        try await store.addOutcome(outcome)
+        if let existing = existingOutcomes.first {
+            // 이미 존재하면 업데이트
+            var updatedOutcome = existing
+            updatedOutcome.values = [OCKOutcomeValue(value, units: "mg/dL")]
+            try await store.updateOutcome(updatedOutcome)
+        } else {
+            // 존재하지 않으면 새로 추가
+            let outcome = OCKOutcome(
+                taskUUID: taskUUID,
+                taskOccurrenceIndex: taskOccurrenceIndex,
+                values: [OCKOutcomeValue(value, units: "mg/dL")]
+            )
+            try await store.addOutcome(outcome)
+        }
     }
 
     // Task의 UUID를 조회하는 헬퍼 메서드
