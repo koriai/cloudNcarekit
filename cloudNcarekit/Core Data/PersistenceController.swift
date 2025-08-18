@@ -81,7 +81,7 @@ struct PersistenceController {
         // CloudKit container identifier 설정
         description.cloudKitContainerOptions =
             NSPersistentCloudKitContainerOptions(
-                containerIdentifier: "iCloud.com.yourcompany.CareKitCloud"
+                containerIdentifier: myContainerIdentifier
             )
 
         // CloudKit 동기화 옵션

@@ -10,25 +10,26 @@ import SwiftUI
 
 @main
 struct cloudNcarekitApp: App {
-    
-    
+
     init() {
-        CareKitManager.configure(mode: .coreData)  // 여기서 선택
+        CareKitManager.configure(mode: .remote)  // 여기서 선택
     }
-    
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             BloodGlucose.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .automatic
         )
 
         do {
             return try ModelContainer(
                 for: schema,
-                configurations: [modelConfiguration]
+                configurations: [modelConfiguration],
+                
             )
         } catch {
             fatalError("Could not create ModelContainer: \(error)")

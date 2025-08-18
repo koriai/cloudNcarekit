@@ -8,6 +8,7 @@ import SwiftUI
 struct BloodGlucoseInputView: View {
     // HealthKit 매니저 (싱글턴). @StateObject로 관찰하여 권한/오류 변화에 반응
     @StateObject private var healthKitManager = HealthKitManager.shared
+    @EnvironmentObject var careKitManager: CareKitManager
 
     // 사용자가 입력하는 혈당 텍스트(숫자 문자열)
     @State private var bloodGlucoseValue = ""
