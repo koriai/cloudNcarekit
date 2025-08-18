@@ -2,21 +2,50 @@ import CareKit  // CareKit: 헬스케어 앱에서 '활동(Task)'과 '결과(Out
 import CareKitStore  // CareKitStore: CareKit의 데이터 저장소. Task, Outcome 등을 저장/조회 가능
 import CloudKit
 internal import Combine
+import CoreData
 import Foundation  // Swift 기본 기능 제공
+
+import CareKitStore
+import CoreData
+
+
+/// Core Data + CloudKit 자동 동기화를 위한 OCKStore 서브클래스
+final class CloudKitOCKStore: OCKStore {
+    let cloudContainer: NSPersistentCloudKitContainer
+
+    init(name: String, container: NSPersistentCloudKitContainer) {
+        self.cloudContainer = container
+        super.init(name: name)
+    }
+
+    /// OCKStore 내부 메서드에서 context 접근 시 CloudKit 컨테이너 사용
+    var context: NSManagedObjectContext {
+        cloudContainer.viewContext
+    }
+}
 
 // CareKit 데이터와 상호작용하는 매니저 클래스
 // 앱 전역에서 하나만 존재하도록 Singleton 패턴 사용 (shared 인스턴스)
 class CareKitManager: ObservableObject {
     static let shared = CareKitManager()  // 전역에서 접근할 수 있는 인스턴스
 
-    let store: OCKStore  // CareKit의 핵심 데이터베이스 역할
+    var store: OCKStore  // CareKit의 핵심 데이터베이스 역할
     let ockRemote: OCKRemoteSynchronizable
+    let nsContainer: NSPersistentCloudKitContainer
 
     // 생성자: OCKStore 초기화 및 기본 Task 등록
     private init() {
         ockRemote = CloudKitRemote(containerIdentifier: myContainerIdentifier)
         // 로컬 저장소 생성 (이름: BloodGlucoseStore)
         store = OCKStore(name: "BloodGlucoseStore", remote: ockRemote)
+
+        // NS Persistence 방식
+        nsContainer = NSPersistentCloudKitContainer(name: "BloodGlucoseStore")
+        nsContainer.viewContext.automaticallyMergesChangesFromParent = true
+
+        // 
+        store = CloudKitOCKStore(name: "BloodGlucoseStore", container: nsContainer)
+        
         setupTasks()  // 앱 실행 시 기본 Task(혈당 측정) 생성
     }
 
