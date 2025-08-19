@@ -22,19 +22,10 @@ final class CloudKitOCKStore: OCKStore {
 
 // CareKit 데이터와 상호작용하는 매니저 클래스
 // 앱 전역에서 하나만 존재하도록 Singleton 패턴 사용 (shared 인스턴스)
+//
 class CareKitManager: ObservableObject {
-    enum StoreMode {
-        case remote
-        case coreData
-    }
 
-    static private(set) var shared: CareKitManager!
-
-    static func configure(mode: StoreMode) {
-        shared = CareKitManager(mode: mode)
-    }
-
-    var store: OCKStore  // CareKit의 핵심 데이터베이스 역할
+    var store: OCKStore
     let ockRemote: OCKRemoteSynchronizable?
     let nsContainer: NSPersistentCloudKitContainer?
     let mode: StoreMode
@@ -42,7 +33,6 @@ class CareKitManager: ObservableObject {
     // 생성자: OCKStore 초기화 및 기본 Task 등록
     private init(mode: StoreMode = .remote) {
         self.mode = mode
-
         switch mode {
         case .remote:
             ockRemote = CloudKitRemote(
@@ -59,9 +49,20 @@ class CareKitManager: ObservableObject {
                 container: container
             )
         }
-
         setupTasks()  // 앱 실행 시 기본 Task(혈당 측정) 생성
     }
+    
+    
+    static private(set) var shared: CareKitManager!
+
+    static func configure(mode: StoreMode) {
+        shared = CareKitManager(mode: mode)
+    }
+    enum StoreMode {
+        case remote
+        case coreData
+    }
+
 
     // 앱 시작 시 Task 생성 작업 실행
     private func setupTasks() {

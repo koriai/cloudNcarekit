@@ -7,3 +7,5 @@
 
 /// cloudKit Container ID
 let myContainerIdentifier = "iCloud.com.koriai.cloudNcarekit"
+
+let myModelStoreIdentifier = "DataStoreModel"

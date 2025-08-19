@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="25A5346a" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="BloodGlucose" representedClassName="BloodGlucose" syncable="YES" codeGenerationType="class">
+        <attribute name="timestamp" attributeType="Date" defaultDateTimeInterval="777283140" usesScalarValueType="NO"/>
+        <attribute name="unit" attributeType="String" defaultValueString="mg/dL"/>
+        <attribute name="value" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
+</model>

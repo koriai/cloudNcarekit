@@ -13,7 +13,7 @@ class PersistenceController {
     let container: NSPersistentCloudKitContainer
 
     init(inMemory: Bool = false) {
-        container = NSPersistentCloudKitContainer(name: "CareKitStore")  // 모델 이름과 동일해야 함
+        container = NSPersistentCloudKitContainer(name: myModelStoreIdentifier)  // 모델 이름과 동일해야 함
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(
                 fileURLWithPath: "/dev/null"

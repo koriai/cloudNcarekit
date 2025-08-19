@@ -1,4 +1,5 @@
 import HealthKit
+import CareKitStore
 import SwiftUI
 
 // 혈당 값을 입력해서 HealthKit과 CareKit 모두에 저장하는 화면
@@ -58,8 +59,7 @@ struct BloodGlucoseInputView: View {
                     BloodGlucoseListView()
                         .environment(\.managedObjectContext, context)
                 } else {
-                    Text("Core Data 컨텍스트가 준비되지 않았습니다.")
-                        .padding()
+                    BloodGlucoseCareKitListView()
                 }
             }
         }
@@ -274,7 +274,7 @@ struct BloodGlucoseListView: View {
         NavigationView {
             List(bloodGlucoseRecords) { record in
                 VStack(alignment: .leading) {
-                    Text(dateFormatter.string(from: record.timestamp))
+                    Text(dateFormatter.string(from: record.timestamp ?? Date()))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text("\(record.value, specifier: "%.1f") \(record.unit ?? "mg/dL")")
@@ -299,6 +299,86 @@ struct BloodGlucoseListView: View {
         return formatter
     }
 }
+
+#if canImport(SwiftUI)
+struct BloodGlucoseCareKitListView: View {
+    @EnvironmentObject var careKitManager: CareKitManager
+
+    @State private var outcomes: [OCKOutcome] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationView {
+            Group {
+                if isLoading {
+                    ProgressView()
+                } else if let errorMessage = errorMessage {
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.system(size: 40))
+                        Text(errorMessage)
+                            .font(.callout)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                } else if outcomes.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        Text("기록된 혈당이 없습니다.")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                } else {
+                    List(outcomes, id: \.uuid) { outcome in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(dateFormatter.string(from: outcome.createdDate ?? Date()))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            if let value = outcome.values.first?.doubleValue,
+                               let unit = outcome.values.first?.units {
+                                Text(String(format: "%.1f %@", value, unit))
+                                    .font(.headline)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .navigationTitle("혈당 기록")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .task { await loadOutcomes() }
+        .refreshable { await loadOutcomes() }
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }
+
+    private func loadOutcomes() async {
+        guard errorMessage == nil else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            var query = OCKOutcomeQuery()
+            // Sort newest first by createdDate if available
+            query.sortDescriptors = [.effectiveDate(ascending: false)]
+            let fetched = try await careKitManager.store.fetchOutcomes(query: query)
+            await MainActor.run { self.outcomes = fetched }
+        } catch {
+            await MainActor.run { self.errorMessage = error.localizedDescription }
+        }
+    }
+}
+#endif
 
 #Preview {
     BloodGlucoseInputView()

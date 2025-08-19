@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BE0FB7242E51894200638AD2 /* CareKit in Frameworks */ = {isa = PBXBuildFile; productRef = BE0FB7232E51894200638AD2 /* CareKit */; };
-		BE0FB7262E51894200638AD2 /* CareKitFHIR in Frameworks */ = {isa = PBXBuildFile; productRef = BE0FB7252E51894200638AD2 /* CareKitFHIR */; };
-		BE0FB7282E51894200638AD2 /* CareKitStore in Frameworks */ = {isa = PBXBuildFile; productRef = BE0FB7272E51894200638AD2 /* CareKitStore */; };
-		BE0FB72A2E51894200638AD2 /* CareKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = BE0FB7292E51894200638AD2 /* CareKitUI */; };
+		BEFE72AD2E546B97001D316B /* CareKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72AC2E546B97001D316B /* CareKit */; };
+		BEFE72AF2E546B97001D316B /* CareKitFHIR in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72AE2E546B97001D316B /* CareKitFHIR */; };
+		BEFE72B12E546B97001D316B /* CareKitStore in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72B02E546B97001D316B /* CareKitStore */; };
+		BEFE72B32E546B97001D316B /* CareKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72B22E546B97001D316B /* CareKitUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,10 +43,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE0FB7242E51894200638AD2 /* CareKit in Frameworks */,
-				BE0FB7262E51894200638AD2 /* CareKitFHIR in Frameworks */,
-				BE0FB72A2E51894200638AD2 /* CareKitUI in Frameworks */,
-				BE0FB7282E51894200638AD2 /* CareKitStore in Frameworks */,
+				BEFE72AD2E546B97001D316B /* CareKit in Frameworks */,
+				BEFE72AF2E546B97001D316B /* CareKitFHIR in Frameworks */,
+				BEFE72B32E546B97001D316B /* CareKitUI in Frameworks */,
+				BEFE72B12E546B97001D316B /* CareKitStore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,10 +89,10 @@
 			);
 			name = cloudNcarekit;
 			packageProductDependencies = (
-				BE0FB7232E51894200638AD2 /* CareKit */,
-				BE0FB7252E51894200638AD2 /* CareKitFHIR */,
-				BE0FB7272E51894200638AD2 /* CareKitStore */,
-				BE0FB7292E51894200638AD2 /* CareKitUI */,
+				BEFE72AC2E546B97001D316B /* CareKit */,
+				BEFE72AE2E546B97001D316B /* CareKitFHIR */,
+				BEFE72B02E546B97001D316B /* CareKitStore */,
+				BEFE72B22E546B97001D316B /* CareKitUI */,
 			);
 			productName = cloudNcarekit;
 			productReference = BE0FB6FA2E5188FF00638AD2 /* cloudNcarekit.app */;
@@ -123,7 +123,7 @@
 			mainGroup = BE0FB6F12E5188FF00638AD2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */,
+				BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BE0FB6FB2E5188FF00638AD2 /* Products */;
@@ -365,7 +365,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */ = {
+		BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/carekit-apple/CareKit.git";
 			requirement = {
@@ -376,24 +376,24 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BE0FB7232E51894200638AD2 /* CareKit */ = {
+		BEFE72AC2E546B97001D316B /* CareKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKit;
 		};
-		BE0FB7252E51894200638AD2 /* CareKitFHIR */ = {
+		BEFE72AE2E546B97001D316B /* CareKitFHIR */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitFHIR;
 		};
-		BE0FB7272E51894200638AD2 /* CareKitStore */ = {
+		BEFE72B02E546B97001D316B /* CareKitStore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitStore;
 		};
-		BE0FB7292E51894200638AD2 /* CareKitUI */ = {
+		BEFE72B22E546B97001D316B /* CareKitUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BE0FB7222E51894200638AD2 /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitUI;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -12,7 +12,7 @@ import SwiftUI
 struct cloudNcarekitApp: App {
 
     init() {
-        CareKitManager.configure(mode: .remote)  // 여기서 선택
+        CareKitManager.configure(mode: .coreData)  // 여기서 선택
     }
 
 //    var sharedModelContainer: ModelContainer = {
