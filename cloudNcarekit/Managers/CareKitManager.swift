@@ -52,16 +52,7 @@ class CareKitManager: ObservableObject {
             nsContainer = nil
         case .coreData:
             ockRemote = nil
-            let container = NSPersistentCloudKitContainer(
-                name: "BloodGlucoseStore"
-            )
-
-            container.persistentStoreDescriptions.first?
-                .cloudKitContainerOptions =
-                NSPersistentCloudKitContainerOptions(
-                    containerIdentifier: myContainerIdentifier
-                )
-            container.viewContext.automaticallyMergesChangesFromParent = true
+            let container = PersistenceController.shared.container
             nsContainer = container
             store = CloudKitOCKStore(
                 name: "BloodGlucoseStore",
@@ -84,7 +75,7 @@ class CareKitManager: ObservableObject {
     private func createBloodGlucoseTask() async {
         // OCKTask: 사용자가 해야 하는 활동 정의
         let bloodGlucoseTask = OCKTask(
-            id: "bloodGlucose",  // Task 식별자
+            id: "BloodGlucoseStore",  // Task 식별자
             title: "혈당 측정",  // UI에 표시될 제목
             carePlanUUID: nil,  // UUID(uuidString: Date().description),  // Care Plan(관리 계획)에 연결할 경우 UUID 필요
             schedule: OCKSchedule.dailyAtTime(  // 매일 특정 시간에 반복되는 스케줄 생성
@@ -109,14 +100,16 @@ class CareKitManager: ObservableObject {
             print("Failed to add blood glucose task: \(error)")
         }
     }
+
+    ///
     func saveBloodGlucoseOutcome(value: Double, date: Date = Date())
         async throws
     {
-        let taskUUID = try await getTaskUUID(for: "bloodGlucose")
+        let taskUUID = try await getTaskUUID(for: "BloodGlucoseStore")
 
         // 오늘 날짜 TaskOccurrenceIndex 계산
         let taskOccurrenceIndex = 0  // 단순 예시: 하루 첫 번째
-        var existingOutcomes = try await store.fetchOutcomes(
+        let existingOutcomes = try await store.fetchOutcomes(
             query: OCKOutcomeQuery(for: Date())
         ).filter {
             $0.taskUUID == taskUUID
@@ -136,21 +129,24 @@ class CareKitManager: ObservableObject {
                 values: [OCKOutcomeValue(value, units: "mg/dL")]
             )
             try await store.addOutcome(outcome)
+
+            if let context = nsContainer?.viewContext {
+                _ = BloodGlucose.from(outcome: outcome, context: context)
+                try context.save()
+            }
         }
     }
 
     // Task의 UUID를 조회하는 헬퍼 메서드
     private func getTaskUUID(for taskID: String) async throws -> UUID {
-        // 오늘 날짜를 기준으로 Task 조회
-        var query = OCKTaskQuery(for: Date())
-        query.ids = [taskID]  // 특정 ID의 Task만 검색
+        var query = OCKTaskQuery()
+        query.ids = [taskID]  // 날짜 조건 제거
 
         let tasks = try await store.fetchTasks(query: query)
         guard let task = tasks.first else {
-            throw CareKitError.taskNotFound  // Task를 찾지 못한 경우
+            throw CareKitError.taskNotFound
         }
-
-        return task.uuid  // Task 식별용 UUID 반환
+        return task.uuid
     }
 
     // 특정 기간(startDate ~ endDate)의 혈당 측정 결과를 가져오기

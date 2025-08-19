@@ -5,14 +5,32 @@ import Foundation
 import SwiftData
 import CoreData
 
-// MARK: - BloodGlucose Model
-class BloodGlucose: NSManagedObject {
-    @NSManaged var value: Double
-    @NSManaged var unit: String
-    @NSManaged var timestamp: Date
-    @NSManaged var notes: String
+@objc(BloodGlucose)
+public class BloodGlucose: NSManagedObject, Identifiable { }
+
+extension BloodGlucose {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<BloodGlucose> {
+        return NSFetchRequest<BloodGlucose>(entityName: "BloodGlucose")
+    }
+
+    @NSManaged public var value: Double
+    @NSManaged public var unit: String?
+    @NSManaged public var timestamp: Date
+    @NSManaged public var notes: String?
 }
 
+extension BloodGlucose {
+    static func from(outcome: OCKOutcome, context: NSManagedObjectContext) -> BloodGlucose? {
+        guard let value = outcome.values.first?.doubleValue else { return nil }
+
+        let record = BloodGlucose(context: context)
+        record.value = value
+        record.unit = outcome.values.first?.units ?? "mg/dL"
+        record.timestamp = outcome.createdDate ?? Date()
+        record.notes = nil
+        return record
+    }
+}
 //
 //// MARK: - FHIR Integration
 //extension BloodGlucose {

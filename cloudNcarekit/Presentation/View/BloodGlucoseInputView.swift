@@ -54,7 +54,13 @@ struct BloodGlucoseInputView: View {
                 }
             }
             .sheet(isPresented: $showSheet) {
-                BloodGlucoseListView()
+                if let context = CareKitManager.shared.nsContainer?.viewContext {
+                    BloodGlucoseListView()
+                        .environment(\.managedObjectContext, context)
+                } else {
+                    Text("Core Data 컨텍스트가 준비되지 않았습니다.")
+                        .padding()
+                }
             }
         }
         // 저장 결과를 사용자에게 알려주는 알럿
@@ -229,7 +235,8 @@ struct BloodGlucoseInputView: View {
 
                 // 2) CareKit 저장 (동일 시각, 동일 값으로 Outcome 기록)
                 try await CareKitManager.shared.saveBloodGlucoseOutcome(
-                    value: value
+                    value: value,
+                    date: Date()
                 )
                 print("CareKitManager success")
 
@@ -254,21 +261,23 @@ struct BloodGlucoseInputView: View {
     }
 }
 
-// 혈당 기록 리스트를 보여주는 뷰
 struct BloodGlucoseListView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.managedObjectContext) private var context
 
-    // CareKitManager.shared에서 저장된 혈당 outcome 데이터를 불러옴
-    @State private var bloodGlucoseRecords: [BloodGlucoseRecord] = []
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \BloodGlucose.timestamp, ascending: false)],
+        animation: .default
+    ) private var bloodGlucoseRecords: FetchedResults<BloodGlucose>
 
     var body: some View {
         NavigationView {
             List(bloodGlucoseRecords) { record in
                 VStack(alignment: .leading) {
-                    Text(dateFormatter.string(from: record.date))
+                    Text(dateFormatter.string(from: record.timestamp))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("\(record.value, specifier: "%.1f") mg/dL")
+                    Text("\(record.value, specifier: "%.1f") \(record.unit ?? "mg/dL")")
                         .font(.headline)
                 }
                 .padding(.vertical, 4)
@@ -277,54 +286,8 @@ struct BloodGlucoseListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기") {
-                        dismiss()
-                    }
+                    Button("닫기") { dismiss() }
                 }
-            }
-            .onAppear {
-                loadRecords()
-            }
-        }
-    }
-    private func loadRecords() {
-        Task {
-            do {
-                let calendar = Calendar.current
-                let today = Date()
-                guard
-                    let oneMonthAgo = calendar.date(
-                        byAdding: .month,
-                        value: -1,
-                        to: today
-                    )
-                else { return }
-
-                let outcomes = try await CareKitManager.shared
-                    .fetchBloodGlucoseOutcomes(from: oneMonthAgo, to: today)
-
-                // OCKOutcome → BloodGlucoseRecord 변환
-                let records = outcomes.compactMap {
-                    outcome -> BloodGlucoseRecord? in
-                    guard let value = outcome.values.first?.doubleValue else {
-                        return nil
-                    }
-                    return BloodGlucoseRecord(
-                        date: outcome.createdDate ?? Date(),
-                        value: value
-                    )
-                }
-                print("records count")
-                print(records.count)
-
-                await MainActor.run {
-                    bloodGlucoseRecords = records.sorted(by: {
-                        $0.date > $1.date
-                    })
-                }
-
-            } catch {
-                print("혈당 기록 불러오기 실패: \(error.localizedDescription)")
             }
         }
     }
@@ -335,13 +298,6 @@ struct BloodGlucoseListView: View {
         formatter.timeStyle = .short
         return formatter
     }
-}
-
-// 혈당 기록 모델 (CareKitManager에서 반환하는 데이터 타입 예시)
-struct BloodGlucoseRecord: Identifiable {
-    let id = UUID()
-    let date: Date
-    let value: Double
 }
 
 #Preview {
