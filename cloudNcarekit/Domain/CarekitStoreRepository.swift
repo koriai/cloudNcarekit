@@ -205,15 +205,9 @@ final class CarekitStoreRepository: ObservableObject {
     }
 
     func deleteTask(_ task: OCKTask) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            store?.deleteTask(task) { result in
-                switch result {
-                case .success(let deleted):
-                    continuation.resume(returning: deleted)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
+        guard let store = self.store else {
+            throw OCKStoreError.remoteSynchronizationFailed(reason: "")
         }
+        _ = try await store.deleteTask(task)
     }
 }

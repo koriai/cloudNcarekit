@@ -31,19 +31,28 @@ struct TaskView: View {
             Text(careplan.title)
                 .font(.headline)
                 .padding()
+            List {
+                ForEach(viewModel.tasks, id: \.uuid) { task in
 
-            ForEach(viewModel.tasks, id: \.id) { task in
-
-                RectangularCompletionView(
-                    isComplete: false,
-                    content: {
-                        Text(task.id)
-                        Text(task.title ?? "task title")
-                            .font(.headline)
-                            .padding()
+                    RectangularCompletionView(
+                        isComplete: false,
+                        content: {
+                            Text(task.id)
+                            Text(task.title ?? "task title")
+                                .font(.headline)
+                                .padding()
+                        }
+                    )
+                }.onDelete { indexSet in
+                    if let index = indexSet.first {
+                        let task = viewModel.tasks[index]
+                        Task {
+                            if let ockTask = task as? OCKTask {
+                                await viewModel.deleteTask(ockTask)
+                            }
+                        }
                     }
-                )
-
+                }
             }
 
         }.task {
@@ -58,7 +67,7 @@ struct TaskView: View {
                     showAddTaskSheet = true
                 }) { Image(systemName: "plus") }
             })
-            
+
         }.sheet(
             isPresented: $showAddTaskSheet,
             content: {
@@ -73,7 +82,7 @@ struct TaskView: View {
                             print("Creating task with title: \(taskTitle)")
                             print("Care plan UUID: \(careplan.uuid)")
                             print("Care plan ID: \(careplan.id)")
-                            
+
                             let task = OCKTask(
                                 id: UUID().uuidString,
                                 title: taskTitle,
@@ -86,10 +95,10 @@ struct TaskView: View {
                                     text: taskTitle
                                 )
                             )
-                            
+
                             print("Task created: \(task.id)")
                             print("Task care plan UUID: \(task.carePlanUUID)")
-                            
+
                             await viewModel.addTask(task)
                             try await viewModel.fetchTasks(for: careplan.uuid)
                             showAddTaskSheet = false

@@ -24,18 +24,27 @@ class TaskViewModel: ObservableObject {
     func fetchTasks() async throws {
         do {
             let fetched = try await repository.fetchTasks()
-            self.tasks = fetched
+            self.tasks = Array(
+                Dictionary(grouping: fetched, by: { $0.id }).values.compactMap {
+                    $0.first
+                }
+            )
             print("tasks: \(fetched)")
         } catch {
             print("Error fetching tasks: \(error)")
         }
     }
-    
+
     func fetchTasks(for carePlanUUID: UUID) async throws {
         do {
             self.currentCarePlanUUID = carePlanUUID
             let fetched = try await repository.fetchTasks(for: carePlanUUID)
-            self.tasks = fetched
+            
+            self.tasks = Array(
+                Dictionary(grouping: fetched, by: { $0.id }).values.compactMap {
+                    $0.first
+                }
+            )
             print("tasks for care plan \(carePlanUUID): \(fetched)")
         } catch {
             print("Error fetching tasks: \(error)")
@@ -45,7 +54,9 @@ class TaskViewModel: ObservableObject {
     ///
     func addTask(_ task: OCKTask) async {
         do {
-            print("Adding task: \(task.title ?? "no title") with care plan UUID: \(task.carePlanUUID)")
+            print(
+                "Adding task: \(task.title ?? "no title") with care plan UUID: \(task.carePlanUUID)"
+            )
             let addedTask = try await repository.addTask(task)
             print("Task added successfully: \(addedTask.id)")
             if let carePlanUUID = currentCarePlanUUID {

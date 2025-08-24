@@ -133,66 +133,95 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
             completion(nil)
         }
     }
-
+    
     // MARK: - PUSH
     func pushRevisions(
         deviceRevisions: [CareKitStore.OCKRevisionRecord],
         deviceKnowledge: CareKitStore.OCKRevisionRecord.KnowledgeVector,
         completion: @escaping ((any Error)?) -> Void
     ) {
-        var records: [CKRecord] = []
+        var recordsToSave: [CKRecord] = []
+        var recordIDsToDelete: [CKRecord.ID] = []
 
         for revision in deviceRevisions {
             for entity in revision.entities {
-                let record: CKRecord
-
+                
                 switch entity {
+                    
                 case .patient(let patient):
-                    record = CKRecord(
-                        recordType: carekitRecordType,
-                        recordID: CKRecord.ID(
-                            recordName: patient.uuid.uuidString
-                        )
-                    )
-                    record["type"] = "patient"
-                    record["name"] = patient.name.givenName
-                case .carePlan(let careplan):
-                    record = CKRecord(
-                        recordType: carekitRecordType,
-                        recordID: CKRecord.ID(
-                            recordName: careplan.uuid.uuidString
-                        )
-                    )
-                    record["type"] = "careplan"
-                case .task(let task):
-                    record = CKRecord(
-                        recordType: carekitRecordType,
-                        recordID: CKRecord.ID(recordName: task.uuid.uuidString)
-                    )
-                    record["type"] = "task"
-                    record["title"] = task.title
-                    record["createdDate"] = task.createdDate?.description
-                case .outcome:
-                    record = CKRecord(recordType: carekitRecordType)
-                    record["type"] = "outcome"
+                    if patient.deletedDate != nil {
+                        recordIDsToDelete.append(CKRecord.ID(recordName: patient.id))
+                    } else {
+                        let record = CKRecord(recordType: carekitRecordType, recordID: CKRecord.ID(recordName: patient.id))
+                        record["type"] = "patient"
+                        // ✅ 옵셔널 값에 기본값을 제공하여 nil 저장을 방지합니다.
+                        record["name"] = patient.name.givenName ?? ""
+                        recordsToSave.append(record)
+                    }
+                    
+                case .carePlan(let carePlan):
+                    if carePlan.deletedDate != nil {
+                        recordIDsToDelete.append(CKRecord.ID(recordName: carePlan.id))
+                    } else {
+                        let record = CKRecord(recordType: carekitRecordType, recordID: CKRecord.ID(recordName: carePlan.id))
+                        record["type"] = "careplan"
+                        record["title"] = carePlan.title // OCKCarePlan.title은 옵셔널이 아님
+                        recordsToSave.append(record)
+                    }
 
+                case .task(let task):
+                    if task.deletedDate != nil {
+                        recordIDsToDelete.append(CKRecord.ID(recordName: task.id))
+                    } else {
+                        let record = CKRecord(recordType: carekitRecordType, recordID: CKRecord.ID(recordName: task.id))
+                        record["type"] = "task"
+                        // ✅ 옵셔널 값에 기본값을 제공하여 nil 저장을 방지합니다.
+                        record["title"] = task.title ?? ""
+                        recordsToSave.append(record)
+                    }
+                    
+                case .outcome(let outcome):
+                    if outcome.deletedDate != nil {
+                        recordIDsToDelete.append(CKRecord.ID(recordName: outcome.id))
+                    } else {
+                        let record = CKRecord(recordType: carekitRecordType, recordID: CKRecord.ID(recordName: outcome.id))
+                        record["type"] = "outcome"
+                        // 필요한 outcome 데이터를 record에 추가...
+                        recordsToSave.append(record)
+                    }
+                    
                 default:
                     continue
                 }
-
-                records.append(record)
             }
         }
 
+        // Single batch operation
         let operation = CKModifyRecordsOperation(
-            recordsToSave: records,
-            recordIDsToDelete: nil
+            recordsToSave: recordsToSave,
+            recordIDsToDelete: recordIDsToDelete
         )
-        operation.modifyRecordsCompletionBlock = { _, _, error in
+        operation.savePolicy = .changedKeys
+        
+        // ✅ 디버깅을 위해 완료 블록을 더 상세하게 수정합니다.
+        operation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, error in
+            if let error = error {
+                print("❌ CloudKit Modify Error: \(error.localizedDescription)")
+            } else {
+                print("☁️ CloudKit Push Success!")
+                if let saved = savedRecords, !saved.isEmpty {
+                    print("   - Saved \(saved.count) records.")
+                }
+                if let deleted = deletedRecordIDs, !deleted.isEmpty {
+                    print("   - Deleted \(deleted.count) records.")
+                }
+            }
             completion(error)
         }
         database.add(operation)
     }
+
+
 
     func reset(completion: @escaping (Error?) -> Void) {
         // Clear all CK records (careful in production!)
