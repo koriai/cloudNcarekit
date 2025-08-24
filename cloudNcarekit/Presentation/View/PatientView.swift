@@ -22,7 +22,6 @@ struct PatientView: View {
 
     @State private var path = NavigationPath()
 
-    @State private var patientId: String = ""
     @State private var givenName: String = ""
     @State private var familyName: String = ""
     @State private var saveResult: String = ""
@@ -30,10 +29,6 @@ struct PatientView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 16) {
-                TextField("Patient ID", text: $patientId)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-
                 TextField("Given Name", text: $givenName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
@@ -44,23 +39,18 @@ struct PatientView: View {
 
                 Button("Save Patient") {
                     let anyPatient = OCKPatient(
-                        id: patientId,
+                        id: UUID().uuidString,
                         name: PersonNameComponents(
                             givenName: givenName,
                             familyName: familyName
                         )
                     )
                     Task {
-                        do {
-                            let saved = try await patientViewModel.savePatient(
-                                anyPatient: anyPatient
-                            )
-                            print(saveResult)
-                            path.append("careplan")
-                        } catch {
-                            saveResult = "Error: \(error.localizedDescription)"
-                            print(saveResult)
-                        }
+                        _ = await patientViewModel.savePatient(
+                            anyPatient: anyPatient
+                        )
+                        print(saveResult)
+                        path.append("careplan")
                     }
                 }
                 .padding()

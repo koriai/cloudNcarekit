@@ -18,7 +18,7 @@ final class CarekitStoreRepository: ObservableObject {
                     container: .init(
                         identifier: "iCloud.com.koriai.cloudNcarekit"
                     ),
-                    scope: .public
+                    scope: .private
                 ),
 
         )
