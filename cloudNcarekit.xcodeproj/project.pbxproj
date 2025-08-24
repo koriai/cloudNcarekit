@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BEFE72AD2E546B97001D316B /* CareKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72AC2E546B97001D316B /* CareKit */; };
-		BEFE72AF2E546B97001D316B /* CareKitFHIR in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72AE2E546B97001D316B /* CareKitFHIR */; };
-		BEFE72B12E546B97001D316B /* CareKitStore in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72B02E546B97001D316B /* CareKitStore */; };
-		BEFE72B32E546B97001D316B /* CareKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = BEFE72B22E546B97001D316B /* CareKitUI */; };
+		BEAC71032E5AAB980037D007 /* CareKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEAC71022E5AAB980037D007 /* CareKit */; };
+		BEAC71052E5AAB980037D007 /* CareKitFHIR in Frameworks */ = {isa = PBXBuildFile; productRef = BEAC71042E5AAB980037D007 /* CareKitFHIR */; };
+		BEAC71072E5AAB980037D007 /* CareKitStore in Frameworks */ = {isa = PBXBuildFile; productRef = BEAC71062E5AAB980037D007 /* CareKitStore */; };
+		BEAC71092E5AAB980037D007 /* CareKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = BEAC71082E5AAB980037D007 /* CareKitUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,10 +43,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BEFE72AD2E546B97001D316B /* CareKit in Frameworks */,
-				BEFE72AF2E546B97001D316B /* CareKitFHIR in Frameworks */,
-				BEFE72B32E546B97001D316B /* CareKitUI in Frameworks */,
-				BEFE72B12E546B97001D316B /* CareKitStore in Frameworks */,
+				BEAC71032E5AAB980037D007 /* CareKit in Frameworks */,
+				BEAC71052E5AAB980037D007 /* CareKitFHIR in Frameworks */,
+				BEAC71092E5AAB980037D007 /* CareKitUI in Frameworks */,
+				BEAC71072E5AAB980037D007 /* CareKitStore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,10 +89,10 @@
 			);
 			name = cloudNcarekit;
 			packageProductDependencies = (
-				BEFE72AC2E546B97001D316B /* CareKit */,
-				BEFE72AE2E546B97001D316B /* CareKitFHIR */,
-				BEFE72B02E546B97001D316B /* CareKitStore */,
-				BEFE72B22E546B97001D316B /* CareKitUI */,
+				BEAC71022E5AAB980037D007 /* CareKit */,
+				BEAC71042E5AAB980037D007 /* CareKitFHIR */,
+				BEAC71062E5AAB980037D007 /* CareKitStore */,
+				BEAC71082E5AAB980037D007 /* CareKitUI */,
 			);
 			productName = cloudNcarekit;
 			productReference = BE0FB6FA2E5188FF00638AD2 /* cloudNcarekit.app */;
@@ -123,7 +123,7 @@
 			mainGroup = BE0FB6F12E5188FF00638AD2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */,
+				BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BE0FB6FB2E5188FF00638AD2 /* Products */;
@@ -173,8 +173,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -205,8 +205,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -365,7 +365,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */ = {
+		BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/carekit-apple/CareKit.git";
 			requirement = {
@@ -376,24 +376,24 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BEFE72AC2E546B97001D316B /* CareKit */ = {
+		BEAC71022E5AAB980037D007 /* CareKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKit;
 		};
-		BEFE72AE2E546B97001D316B /* CareKitFHIR */ = {
+		BEAC71042E5AAB980037D007 /* CareKitFHIR */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitFHIR;
 		};
-		BEFE72B02E546B97001D316B /* CareKitStore */ = {
+		BEAC71062E5AAB980037D007 /* CareKitStore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitStore;
 		};
-		BEFE72B22E546B97001D316B /* CareKitUI */ = {
+		BEAC71082E5AAB980037D007 /* CareKitUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BEFE72AB2E546B97001D316B /* XCRemoteSwiftPackageReference "CareKit" */;
+			package = BEAC71012E5AAB970037D007 /* XCRemoteSwiftPackageReference "CareKit" */;
 			productName = CareKitUI;
 		};
 /* End XCSwiftPackageProductDependency section */
