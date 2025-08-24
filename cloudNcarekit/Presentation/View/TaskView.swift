@@ -48,9 +48,9 @@ struct TaskView: View {
 
         }.task {
             do {
-                try await viewModel.fetchTasks()
+                try await viewModel.fetchTasks(for: careplan.uuid)
             } catch {
-                print("Failed to fetch careplans: \(error)")
+                print("Failed to fetch tasks: \(error)")
             }
         }.toolbar {
             ToolbarItem(content: {
@@ -78,13 +78,13 @@ struct TaskView: View {
                                         hour: 8,
                                         minutes: 0,
                                         start: Date(),
-                                        end: Date(),
+                                        end: nil,
                                         text: taskTitle
                                     )
                                 )
 
                             )
-                            try await viewModel.fetchTasks()
+                            try await viewModel.fetchTasks(for: careplan.uuid)
                             showAddTaskSheet = false
                         }
                     }

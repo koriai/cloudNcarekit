@@ -13,6 +13,7 @@ import os
 class TaskViewModel: ObservableObject {
     @Published var tasks: [OCKAnyTask] = []
     private let repository: CarekitStoreRepository
+    private var currentCarePlanUUID: UUID?
 
     init(repository: CarekitStoreRepository) {
         self.repository = repository
@@ -29,12 +30,29 @@ class TaskViewModel: ObservableObject {
             print("Error fetching tasks: \(error)")
         }
     }
+    
+    func fetchTasks(for carePlanUUID: UUID) async throws {
+        do {
+            self.currentCarePlanUUID = carePlanUUID
+            let fetched = try await repository.fetchTasks(for: carePlanUUID)
+            self.tasks = fetched
+            print("tasks for care plan \(carePlanUUID): \(fetched)")
+        } catch {
+            print("Error fetching tasks: \(error)")
+        }
+    }
 
     ///
     func addTask(_ task: OCKTask) async {
         do {
-            let _ = try await repository.addTask(task)
-            try await fetchTasks()
+            print("Adding task: \(task.title ?? "no title") with care plan UUID: \(task.carePlanUUID)")
+            let addedTask = try await repository.addTask(task)
+            print("Task added successfully: \(addedTask.id)")
+            if let carePlanUUID = currentCarePlanUUID {
+                try await fetchTasks(for: carePlanUUID)
+            } else {
+                try await fetchTasks()
+            }
         } catch {
             print("Error adding task: \(error)")
         }

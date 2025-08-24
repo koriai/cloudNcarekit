@@ -147,11 +147,31 @@ final class CarekitStoreRepository: ObservableObject {
 
     func fetchTasks() async throws -> [OCKTask] {
         try await withCheckedThrowingContinuation { continuation in
-            store?.fetchTasks(query: .init(for: .distantPast)) { result in
+            let query = OCKTaskQuery(for: .now)
+            store?.fetchTasks(query: query) { result in
                 switch result {
                 case .success(let tasks):
+                    print("Fetched \(tasks.count) tasks")
                     continuation.resume(returning: tasks)
                 case .failure(let error):
+                    print("Error fetching tasks: \(error)")
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    func fetchTasks(for carePlanUUID: UUID) async throws -> [OCKTask] {
+        try await withCheckedThrowingContinuation { continuation in
+            let query = OCKTaskQuery(for: .now)
+//            query.carePlanIDs = [carePlanUUID.uuidString]
+            store?.fetchTasks(query: query) { result in
+                switch result {
+                case .success(let tasks):
+                    print("Fetched \(tasks.count) tasks for care plan \(carePlanUUID)")
+                    continuation.resume(returning: tasks)
+                case .failure(let error):
+                    print("Error fetching tasks for care plan: \(error)")
                     continuation.resume(throwing: error)
                 }
             }
