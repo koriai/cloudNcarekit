@@ -9,6 +9,7 @@ import CareKitStore
 import Foundation
 import os
 
+@MainActor
 class TaskViewModel: ObservableObject {
     @Published var tasks: [OCKAnyTask] = []
     private let repository: CarekitStoreRepository
@@ -19,9 +20,11 @@ class TaskViewModel: ObservableObject {
     }
 
     ///
-    func fetchTasks() async {
+    func fetchTasks() async throws {
         do {
-            self.tasks = try await repository.fetchTasks()
+            let fetched = try await repository.fetchTasks()
+            self.tasks = fetched
+            print("tasks: \(fetched)")
         } catch {
             print("Error fetching tasks: \(error)")
         }
@@ -31,7 +34,7 @@ class TaskViewModel: ObservableObject {
     func addTask(_ task: OCKTask) async {
         do {
             let _ = try await repository.addTask(task)
-            await fetchTasks()
+            try await fetchTasks()
         } catch {
             print("Error adding task: \(error)")
         }
@@ -41,7 +44,7 @@ class TaskViewModel: ObservableObject {
     func updateTask(_ task: OCKTask) async {
         do {
             let _ = try await repository.updateTask(task)
-            await fetchTasks()
+            try await fetchTasks()
         } catch {
             print("Error updating task: \(error)")
         }
@@ -51,7 +54,7 @@ class TaskViewModel: ObservableObject {
     func deleteTask(_ task: OCKTask) async {
         do {
             try await repository.deleteTask(task)
-            await fetchTasks()
+            try await fetchTasks()
         } catch {
             print("Error deleting task: \(error)")
         }

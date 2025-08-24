@@ -20,7 +20,7 @@ final class CarekitStoreRepository: ObservableObject {
                     ),
                     scope: .public
                 ),
-            
+
         )
 
         self.store = store
@@ -145,7 +145,7 @@ final class CarekitStoreRepository: ObservableObject {
 
     // MARK: - Task Operations
 
-    func fetchTasks() async throws -> [OCKAnyTask] {
+    func fetchTasks() async throws -> [OCKTask] {
         try await withCheckedThrowingContinuation { continuation in
             store?.fetchTasks(query: .init(for: .distantPast)) { result in
                 switch result {

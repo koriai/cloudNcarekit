@@ -24,6 +24,7 @@ class PatientViewModel: ObservableObject {
                 withId: patientId
             ) {
                 self.patient = fetched
+                print("patient: \(fetched)")
             }
         } catch {
             print("Error fetching patient: \(error)")

@@ -30,6 +30,7 @@ class CareplanViewModel: ObservableObject {
         do {
             let fetched = try await repository.fetchCareplans()
             self.careplans = fetched
+            print("careplans: \(fetched)")
         } catch {
             print("Error fetching careplans: \(error)")
         }

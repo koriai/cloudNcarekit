@@ -168,6 +168,7 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
                 case .outcome:
                     record = CKRecord(recordType: carekitRecordType)
                     record["type"] = "outcome"
+                    
                 default:
                     continue
                 }
