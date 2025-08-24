@@ -41,6 +41,7 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
 
     // MARK: - OCKRemoteSynchronizable
 
+    //MARK: - Pull
     func pullRevisions(
         since knowledgeVector: CareKitStore.OCKRevisionRecord.KnowledgeVector,
         mergeRevision: @escaping (CareKitStore.OCKRevisionRecord) -> Void,
@@ -103,7 +104,7 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
                                     start: Date(),
                                     end: nil,
                                     text: ""
-                                )
+                                ),
                             )
                             tasks.append(task)
                         }
@@ -133,6 +134,7 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
         }
     }
 
+    // MARK: - PUSH
     func pushRevisions(
         deviceRevisions: [CareKitStore.OCKRevisionRecord],
         deviceKnowledge: CareKitStore.OCKRevisionRecord.KnowledgeVector,
@@ -148,27 +150,32 @@ final class CloudKitRemote: OCKRemoteSynchronizable {
                 case .patient(let patient):
                     record = CKRecord(
                         recordType: carekitRecordType,
-                        recordID: CKRecord.ID(recordName: patient.id)
+                        recordID: CKRecord.ID(
+                            recordName: patient.uuid.uuidString
+                        )
                     )
                     record["type"] = "patient"
                     record["name"] = patient.name.givenName
                 case .carePlan(let careplan):
                     record = CKRecord(
                         recordType: carekitRecordType,
-                        recordID: CKRecord.ID(recordName: careplan.id)
+                        recordID: CKRecord.ID(
+                            recordName: careplan.uuid.uuidString
+                        )
                     )
                     record["type"] = "careplan"
                 case .task(let task):
                     record = CKRecord(
                         recordType: carekitRecordType,
-                        recordID: CKRecord.ID(recordName: task.id)
+                        recordID: CKRecord.ID(recordName: task.uuid.uuidString)
                     )
                     record["type"] = "task"
                     record["title"] = task.title
+                    record["createdDate"] = task.createdDate?.description
                 case .outcome:
                     record = CKRecord(recordType: carekitRecordType)
                     record["type"] = "outcome"
-                    
+
                 default:
                     continue
                 }

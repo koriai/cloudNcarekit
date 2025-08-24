@@ -58,6 +58,7 @@ struct TaskView: View {
                     showAddTaskSheet = true
                 }) { Image(systemName: "plus") }
             })
+            
         }.sheet(
             isPresented: $showAddTaskSheet,
             content: {
@@ -69,21 +70,27 @@ struct TaskView: View {
 
                     Button("Add Task") {
                         Task {
-                            await viewModel.addTask(
-                                OCKTask(
-                                    id: UUID().uuidString,
-                                    title: taskTitle,
-                                    carePlanUUID: careplan.uuid,
-                                    schedule: .dailyAtTime(
-                                        hour: 8,
-                                        minutes: 0,
-                                        start: Date(),
-                                        end: nil,
-                                        text: taskTitle
-                                    )
+                            print("Creating task with title: \(taskTitle)")
+                            print("Care plan UUID: \(careplan.uuid)")
+                            print("Care plan ID: \(careplan.id)")
+                            
+                            let task = OCKTask(
+                                id: UUID().uuidString,
+                                title: taskTitle,
+                                carePlanUUID: careplan.uuid,
+                                schedule: .dailyAtTime(
+                                    hour: 8,
+                                    minutes: 0,
+                                    start: Date(),
+                                    end: nil,
+                                    text: taskTitle
                                 )
-
                             )
+                            
+                            print("Task created: \(task.id)")
+                            print("Task care plan UUID: \(task.carePlanUUID)")
+                            
+                            await viewModel.addTask(task)
                             try await viewModel.fetchTasks(for: careplan.uuid)
                             showAddTaskSheet = false
                         }
